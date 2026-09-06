@@ -1,0 +1,189 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# NestJS / TypeScript
+dist/
+build/
+*.tsbuildinfo
+
+# Environment variables
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+
+# Logs
+logs/
+*.log
+*.log.*
+log/
+
+# OS files
+.DS_Store
+Thumbs.db
+desktop.ini
+*.swp
+*.swo
+*~
+
+# IDE / Editor files
+.vscode/
+.idea/
+*.iml
+.project
+.classpath
+.settings/
+*.code-workspace
+*.sublime-project
+*.sublime-workspace
+
+# WebStorm specific
+.idea/workspace.xml
+.idea/tasks.xml
+.idea/dataSources.xml
+.idea/dataSources.ids
+.idea/dictionaries/
+.idea/shelf/
+.idea/jsLibraryMappings.xml
+.idea/misc.xml
+.idea/modules.xml
+.idea/vcs.xml
+.idea/compiler.xml
+.idea/jarRepositories.xml
+.idea/encodings.xml
+.idea/inspectionProfiles/
+
+# Uploads (user uploaded files)
+uploads/
+!uploads/.gitkeep
+
+# Testing
+coverage/
+.nyc_output/
+test-results/
+jest-output/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Database files (if any)
+*.db
+*.sqlite
+*.sqlite3
+*.db-journal
+
+# Docker
+*.dockerignore
+.docker/
+docker-compose.override.yml
+
+# Production
+*.min.js
+*.min.css
+*.map
+*.gz
+
+# Backup files
+*.bak
+*.backup
+*.old
+*.orig
+
+# Secrets
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.truststore
+*.secret
+secrets/
+certificates/
+keys/
+
+# NestJS CLI files (optional)
+nest-cli.json.user
+
+# Git
+.git/
+.gitattributes
+.gitmodules
+
+# NPM
+.npmrc
+.npm/
+
+# Yarn
+.yarn/
+.yarnrc
+.yarnclean
+
+# PNPM
+.pnpm-debug.log
+.pnpm-store/
+
+# ESLint / Prettier
+.eslintcache
+.prettiercache
+
+# Build tools
+*.tsbuildinfo
+*.tgz
+
+# Debug files
+*.pid
+*.seed
+*.pid.lock
+
+# System files
+*.dll
+*.so
+*.dylib
+
+# Archives
+*.zip
+*.rar
+*.7z
+*.tar.gz
+*.tgz
+
+# Media files (optional - если загружаете через приложение)
+*.mp4
+*.avi
+*.mov
+*.wmv
+*.flv
+*.mkv
+*.mp3
+*.wav
+*.flac
+*.aac
+*.ogg
+
+# Windows
+$RECYCLE.BIN/
+*.lnk
+
+# MacOS
+.AppleDouble
+.LSOverride
+._*
+
+# Linux
+*~
+
+# Covers local development overrides
+*.local
