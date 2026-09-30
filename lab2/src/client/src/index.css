@@ -16,9 +16,52 @@ body {
     margin: 0 auto;
 }
 
-h1 {
-    text-align: center;
+.header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     margin-bottom: 20px;
+}
+
+.badge {
+    background-color: #e2e8f0;
+    padding: 6px 12px;
+    border-radius: 20px;
+    font-weight: bold;
+    font-size: 12px;
+    margin-right: 10px;
+}
+
+.tabs {
+    display: flex;
+    margin-bottom: 15px;
+    border-bottom: 2px solid #e2e8f0;
+}
+
+.tab-btn {
+    flex: 1;
+    padding: 10px;
+    border: none;
+    background: none;
+    font-weight: bold;
+    font-size: 14px;
+    color: #718096;
+    cursor: pointer;
+}
+
+.tab-btn.active {
+    color: #3182ce;
+    border-bottom: 2px solid #3182ce;
+    margin-bottom: -2px;
+}
+
+.link-btn {
+    color: #3182ce;
+    cursor: pointer;
+}
+
+.link-btn:hover {
+    text-decoration: underline;
 }
 
 .error-banner {
@@ -29,10 +72,23 @@ h1 {
     margin-bottom: 15px;
 }
 
+.info-banner {
+    background-color: #38a169;
+    color: #fff;
+    padding: 10px 15px;
+    border-radius: 4px;
+    margin-bottom: 15px;
+}
+
 .grid {
     display: grid;
-    grid-template-columns: 300px 1fr;
+    grid-template-columns: 320px 1fr;
     gap: 20px;
+}
+
+.grid-full {
+    display: grid;
+    grid-template-columns: 1fr;
 }
 
 @media (max-width: 768px) {
@@ -43,7 +99,7 @@ h1 {
 
 .card {
     background: #fff;
-    padding: 15px;
+    padding: 20px;
     border-radius: 6px;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
 }
@@ -60,11 +116,13 @@ h1 {
 }
 
 .form-group input,
-.form-group textarea {
+.form-group textarea,
+.form-group select {
     width: 100%;
-    padding: 8px;
+    padding: 8px 10px;
     border: 1px solid #ccc;
     border-radius: 4px;
+    font-size: 14px;
 }
 
 .btn {
@@ -83,7 +141,6 @@ h1 {
 .btn-secondary {
     background-color: #cbd5e0;
     color: #2d3748;
-    margin-left: 8px;
 }
 
 .item-card {

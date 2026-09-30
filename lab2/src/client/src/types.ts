@@ -1,3 +1,5 @@
+export type Role = 'ADMIN' | 'MANAGER' | 'USER';
+
 export interface Item {
     id: number;
     title: string;
@@ -9,4 +11,9 @@ export interface Item {
 
 export interface ApiError {
     error: string;
+}
+
+export interface AuthResponse {
+    token: string;
+    role: Role;
 }

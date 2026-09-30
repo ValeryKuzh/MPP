@@ -1,0 +1,33 @@
+name: Code Quality & Tests
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  check-code:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Чтение кода из репозитория
+        uses: actions/checkout@v4
+
+      - name: Установка Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: 'npm'
+
+      - name: Установка зависимостей
+        run: npm ci
+
+      - name: Проверка типов TypeScript
+        run: npm run type-check
+
+      - name: Запуск линтера
+        run: npm run lint
+
+      - name: Запуск автотестов
+        run: npm test

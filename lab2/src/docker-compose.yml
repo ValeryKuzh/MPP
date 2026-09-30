@@ -23,6 +23,8 @@ services:
     build:
       context: ./server
       dockerfile: Dockerfile
+    env_file:
+      - ./server/.env
     container_name: app_server
     restart: always
     ports:
