@@ -9,6 +9,13 @@ on:
 jobs:
   check-code:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        dir: [ 'lab2/src/client', 'lab2/src/server' ]
+
+    defaults:
+      run:
+        working-directory: ${{ matrix.dir }}
 
     steps:
       - name: Чтение кода из репозитория
