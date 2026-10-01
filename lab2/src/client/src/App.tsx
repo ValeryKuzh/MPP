@@ -13,10 +13,14 @@ export const App: React.FC = () => {
     const [token, setToken] = useState<string | null>(localStorage.getItem('token'));
     const [role, setRole] = useState<Role | null>((localStorage.getItem('role') as Role) || null);
 
-    // Auth Mode: 'login' | 'register' | 'forgot'
-    const [authMode, setAuthMode] = useState<'login' | 'register' | 'forgot'>('login');
+    // Auth Mode: 'login' | 'register' | 'forgot' | 'reset'
+    const [authMode, setAuthMode] = useState<'login' | 'register' | 'forgot' | 'reset'>('login');
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+
+    // Reset Password States
+    const [resetToken, setResetToken] = useState<string>('');
+    const [newPassword, setNewPassword] = useState<string>('');
 
     // Catalog States (USER / MANAGER / ADMIN)
     const [items, setItems] = useState<Item[]>([]);
@@ -46,6 +50,16 @@ export const App: React.FC = () => {
         setInfoMessage(msg);
         setTimeout(() => setInfoMessage(null), 5000);
     };
+
+    // Чтение токена восстановления из URL
+    useEffect(() => {
+        const urlParams = new URLSearchParams(window.location.search);
+        const tokenFromUrl = urlParams.get('token');
+        if (tokenFromUrl) {
+            setResetToken(tokenFromUrl);
+            setAuthMode('reset');
+        }
+    }, []);
 
     // Helper method for safe JSON response parsing
     const parseJsonResponse = async (res: Response) => {
@@ -110,6 +124,28 @@ export const App: React.FC = () => {
             if (!res.ok) throw new Error(data.error || 'Ошибка отправки запроса');
 
             showInfo('Инструкции по сбросу пароля отправлены на ваш email');
+            setAuthMode('login');
+        } catch (err: any) {
+            showError(err.message);
+        }
+    };
+
+    const handleResetPassword = async (e: FormEvent) => {
+        e.preventDefault();
+        try {
+            const res = await fetch('/api/auth/reset-password', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ token: resetToken, newPassword }),
+            });
+            const data = await parseJsonResponse(res);
+            if (!res.ok) throw new Error(data.error || 'Ошибка сброса пароля');
+
+            showInfo('Пароль успешно изменен! Теперь вы можете войти.');
+            // Очищаем URL от query-параметров
+            window.history.replaceState({}, document.title, window.location.pathname);
+            setNewPassword('');
+            setResetToken('');
             setAuthMode('login');
         } catch (err: any) {
             showError(err.message);
@@ -325,7 +361,25 @@ export const App: React.FC = () => {
                                 <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required />
                             </div>
                             <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>
-                                Восстановить пароль
+                                Отправить ссылку для сброса
+                            </button>
+                        </form>
+                    )}
+
+                    {authMode === 'reset' && (
+                        <form onSubmit={handleResetPassword}>
+                            <div className="form-group">
+                                <label>Новый пароль</label>
+                                <input
+                                    type="password"
+                                    value={newPassword}
+                                    onChange={(e) => setNewPassword(e.target.value)}
+                                    placeholder="Введите новый пароль"
+                                    required
+                                />
+                            </div>
+                            <button type="submit" className="btn btn-primary" style={{ width: '100%' }}>
+                                Сохранить новый пароль
                             </button>
                         </form>
                     )}

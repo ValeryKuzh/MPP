@@ -26,7 +26,7 @@ const JWT_SECRET = process.env.JWT_SECRET;
 app.use(cors());
 app.use(express.json());
 
-// 1. Логирование HTTP-запросов
+// Логирование HTTP-запросов
 app.use(pinoHttp({ logger }));
 
 // Директория для загрузки файлов
@@ -107,7 +107,7 @@ const storage = multer.diskStorage({
 
 const upload = multer({
     storage,
-    limits: { fileSize: 5 * 1024 * 1024 }, // Исправлено: 5MB
+    limits: { fileSize: 5 * 1024 * 1024 }, // 5 MB
     fileFilter: (_req, file, cb) => {
         if (file.mimetype.startsWith('image/')) {
             cb(null, true);
@@ -119,7 +119,7 @@ const upload = multer({
 
 // Rate Limiting для входа
 const loginRateLimiter = rateLimit({
-    windowMs: 15 * 60 * 1000, // Исправлено: 15 минут
+    windowMs: 15 * 60 * 1000, // 15 минут
     max: 5,
     message: { error: 'Слишком много попыток входа. Попробуйте через 15 минут.' },
     standardHeaders: true,
@@ -128,12 +128,15 @@ const loginRateLimiter = rateLimit({
 
 // Настройка почтового сервиса
 const transporter = nodemailer.createTransport({
-    host: process.env.SMTP_HOST || 'smtp.mailtrap.io',
-    port: Number(process.env.SMTP_PORT) || 2525,
-    auth: {
-        user: process.env.SMTP_USER || '',
-        pass: process.env.SMTP_PASS || '',
-    },
+    host: process.env.SMTP_HOST || 'smtp.gmail.com',
+    port: Number(process.env.SMTP_PORT) || 587,
+    secure: Number(process.env.SMTP_PORT) === 465,
+    auth: process.env.SMTP_USER && process.env.SMTP_PASS
+        ? {
+            user: process.env.SMTP_USER,
+            pass: process.env.SMTP_PASS,
+        }
+        : undefined,
 });
 
 // Вспомогательная функция для удаления файлов
@@ -219,11 +222,10 @@ app.post('/api/auth/forgot-password', (async (req: Request, res: Response) => {
 
     const result = await pool.query<User>('SELECT * FROM users WHERE email = $1', [email.toLowerCase().trim()]);
 
-    // Исправлено: защита от enumeration-атак
     if (result.rows.length > 0) {
         const user = result.rows[0];
         const resetToken = jwt.sign({ userId: user.id }, JWT_SECRET, { expiresIn: '15m' });
-        const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // Исправлено
+        const expiresAt = new Date(Date.now() + 15 * 60 * 1000);
 
         await pool.query('INSERT INTO password_resets (user_id, token, expires_at) VALUES ($1, $2, $3)', [
             user.id,
@@ -231,14 +233,68 @@ app.post('/api/auth/forgot-password', (async (req: Request, res: Response) => {
             expiresAt,
         ]);
 
+        const clientUrl = process.env.CLIENT_URL || 'http://localhost';
+        const resetLink = `${clientUrl}/reset-password?token=${resetToken}`;
+
         await transporter.sendMail({
+            from: process.env.SMTP_FROM || process.env.SMTP_USER || '"App Support" <no-reply@example.com>',
             to: email,
             subject: 'Восстановление доступа',
-            text: `Ваш токен восстановления доступа: ${resetToken}`,
+            text: `Для сброса пароля перейдите по ссылке: ${resetLink}`,
+            html: `
+                <div style="font-family: sans-serif; padding: 20px;">
+                    <h2>Восстановление доступа</h2>
+                    <p>Для сброса пароля нажмите на кнопку ниже или перейдите по ссылке:</p>
+                    <p style="margin: 20px 0;">
+                        <a href="${resetLink}" style="background-color: #007bff; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; display: inline-block;">
+                            Сбросить пароль
+                        </a>
+                    </p>
+                    <p><small>Ссылка действительна в течение 15 минут.</small></p>
+                    <p style="color: #666; font-size: 12px;">Если кнопка не работает, скопируйте ссылку: <br><a href="${resetLink}">${resetLink}</a></p>
+                </div>
+            `,
         });
     }
 
     res.status(200).json({ message: 'Если указанный email зарегистрирован, инструкции будут отправлены.' });
+}) as RequestHandler);
+
+app.post('/api/auth/reset-password', (async (req: Request, res: Response) => {
+    const { token, newPassword } = req.body;
+
+    if (!token || !newPassword || typeof newPassword !== 'string' || newPassword.trim() === '') {
+        return res.status(400).json({ error: 'Укажите токен и новый пароль' });
+    }
+
+    try {
+        // 1. Расшифровываем и проверяем JWT-токен
+        const payload = jwt.verify(token, JWT_SECRET) as JwtPayload;
+
+        // 2. Проверяем наличие токена в БД и его срок действия
+        const resetRecord = await pool.query(
+            'SELECT * FROM password_resets WHERE token = $1 AND user_id = $2 AND expires_at > NOW()',
+            [token, payload.userId]
+        );
+
+        if (resetRecord.rows.length === 0) {
+            return res.status(400).json({ error: 'Токен недействителен или его срок действия истек' });
+        }
+
+        // 3. Хешируем новый пароль и сбрасываем блокировки
+        const hash = await bcrypt.hash(newPassword, 10);
+        await pool.query(
+            'UPDATE users SET password_hash = $1, failed_login_attempts = 0, lockout_until = NULL WHERE id = $2',
+            [hash, payload.userId]
+        );
+
+        // 4. Удаляем использованные токены пользователя
+        await pool.query('DELETE FROM password_resets WHERE user_id = $1', [payload.userId]);
+
+        res.status(200).json({ message: 'Пароль успешно изменен. Теперь вы можете войти.' });
+    } catch (err) {
+        res.status(400).json({ error: 'Недействительный или просроченный токен' });
+    }
 }) as RequestHandler);
 
 // --- REST API: ITEMS ---
@@ -306,7 +362,6 @@ app.put('/api/items/:id', authenticateToken, requireRole(['MANAGER', 'ADMIN']), 
 
     let imageUrl = oldRecord.rows[0].image_url;
     if (req.file) {
-        // Удаляем старое изображение с диска
         deleteFileIfExists(oldRecord.rows[0].image_url);
         imageUrl = `/uploads/${req.file.filename}`;
     }
@@ -330,7 +385,6 @@ app.delete('/api/items/:id', authenticateToken, requireRole(['ADMIN']), (async (
         return res.status(404).json({ error: 'Товар не найден' });
     }
 
-    // Удаляем изображение товара при удалении записи
     deleteFileIfExists(result.rows[0].image_url);
 
     res.status(200).json({ message: 'Товар успешно удален' });
