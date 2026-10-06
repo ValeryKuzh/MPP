@@ -15,7 +15,7 @@ import { Item, ApiError, User, Role, JwtPayload } from './types';
 import { authenticateToken, requireRole, AuthRequest } from './middleware/auth';
 import { logger } from './logger';
 
-const app = express();
+export const app = express();
 
 if (!process.env.JWT_SECRET) {
     logger.error('CRITICAL: JWT_SECRET не задан в переменных окружения!');
