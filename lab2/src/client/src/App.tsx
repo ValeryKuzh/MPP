@@ -411,50 +411,74 @@ export const App: React.FC = () => {
             {/* ЭКРАН 1: РЕЖИМ ОБЫЧНОГО ПОЛЬЗОВАТЕЛЯ (USER) */}
             {role === 'USER' && (
                 <div className="user-view">
-                    <h3>Витрина товаров</h3>
-                    <div className="form-group" style={{ marginTop: '15px' }}>
-                        <input
-                            type="text"
-                            placeholder="Поиск по названию..."
-                            value={searchQuery}
-                            onChange={(e) => setSearchQuery(e.target.value)}
-                        />
+                    <div className="view-header">
+                        <h3>Витрина товаров</h3>
+                        <div className="search-box">
+                            <input
+                                type="text"
+                                placeholder="🔍 Поиск по названию..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                            />
+                        </div>
                     </div>
 
                     <div className="grid-user">
                         <div className="products-grid">
-                            {filteredItems.map((item) => (
-                                <div key={item.id} className="product-card">
-                                    {item.image_url && <img src={item.image_url} alt={item.title} className="product-img" />}
-                                    <h4>{item.title}</h4>
-                                    <p className="price">${item.price}</p>
-                                    <p className="desc">{item.description}</p>
-                                    <button className="btn btn-primary" onClick={() => addToCart(item)}>
-                                        В корзину
-                                    </button>
+                            {filteredItems.length === 0 ? (
+                                <div className="empty-state">
+                                    <p>Товары не найдены</p>
                                 </div>
-                            ))}
+                            ) : (
+                                filteredItems.map((item) => (
+                                    <div key={item.id} className="product-card">
+                                        <div className="product-img-wrapper">
+                                            {item.image_url ? (
+                                                <img src={item.image_url} alt={item.title} className="product-img" />
+                                            ) : (
+                                                <div className="product-placeholder">
+                                                    📷 Нет изображения
+                                                </div>
+                                            )}
+                                        </div>
+
+                                        <div className="product-content">
+                                            <h4>{item.title}</h4>
+                                            <div className="price">${Number(item.price).toFixed(2)}</div>
+                                            <p className="desc">{item.description || 'Описание отсутствует'}</p>
+                                        </div>
+
+                                        <button className="btn btn-primary btn-add-cart" onClick={() => addToCart(item)}>
+                                            🛒 В корзину
+                                        </button>
+                                    </div>
+                                ))
+                            )}
                         </div>
 
                         <div className="card cart-card">
-                            <h4>Моя Корзина ({cart.reduce((a, b) => a + b.quantity, 0)})</h4>
+                            <h4>🛒 Моя Корзина ({cart.reduce((a, b) => a + b.quantity, 0)})</h4>
                             {cart.length === 0 ? (
-                                <p style={{ fontSize: '13px', color: '#718096' }}>Корзина пуста</p>
+                                <p style={{ fontSize: '13px', color: '#94a3b8', marginTop: '10px' }}>Корзина пуста</p>
                             ) : (
-                                <div>
+                                <div className="cart-list">
                                     {cart.map((c) => (
                                         <div key={c.item.id} className="cart-item">
-                                            <span>{c.item.title} (x{c.quantity})</span>
+                                            <div>
+                                                <span className="cart-item-title">{c.item.title}</span>
+                                                <span className="cart-item-qty">x{c.quantity}</span>
+                                            </div>
                                             <strong>${(Number(c.item.price) * c.quantity).toFixed(2)}</strong>
                                         </div>
                                     ))}
-                                    <hr style={{ margin: '10px 0' }} />
-                                    <strong>
-                                        Итого: ${cart.reduce((sum, c) => sum + Number(c.item.price) * c.quantity, 0).toFixed(2)}
-                                    </strong>
+                                    <hr style={{ margin: '12px 0', borderColor: 'var(--border-color)' }} />
+                                    <div className="cart-total">
+                                        <span>Итого к оплате:</span>
+                                        <strong>${cart.reduce((sum, c) => sum + Number(c.item.price) * c.quantity, 0).toFixed(2)}</strong>
+                                    </div>
                                     <button
                                         className="btn btn-primary"
-                                        style={{ width: '100%', marginTop: '10px' }}
+                                        style={{ width: '100%', marginTop: '14px' }}
                                         onClick={() => {
                                             showInfo('Заказ успешно оформлен!');
                                             setCart([]);
@@ -475,7 +499,7 @@ export const App: React.FC = () => {
                     <h3>Панель управления каталогом</h3>
                     <div className="grid" style={{ marginTop: '15px' }}>
                         <div className="card">
-                            <h4>{editingId ? 'Редактировать товар' : 'Добавить товар'}</h4>
+                            <h4>{editingId ? '✏️ Редактировать товар' : '➕ Добавить товар'}</h4>
                             <form onSubmit={handleSubmitItem}>
                                 <div className="form-group">
                                     <label>Название *</label>
@@ -483,7 +507,7 @@ export const App: React.FC = () => {
                                 </div>
                                 <div className="form-group">
                                     <label>Описание</label>
-                                    <textarea value={description} onChange={(e) => setDescription(e.target.value)} />
+                                    <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={3} />
                                 </div>
                                 <div className="form-group">
                                     <label>Цена ($) *</label>
@@ -504,16 +528,26 @@ export const App: React.FC = () => {
 
                         <div className="card">
                             <h4>Управление позициями ({items.length})</h4>
-                            {items.map((item) => (
-                                <div key={item.id} className="item-card">
-                                    <div>
-                                        <strong>{item.title}</strong> — ${item.price}
+                            <div className="manager-items-list" style={{ marginTop: '12px' }}>
+                                {items.map((item) => (
+                                    <div key={item.id} className="item-card">
+                                        <div className="item-info">
+                                            {item.image_url ? (
+                                                <img src={item.image_url} alt={item.title} className="item-img" />
+                                            ) : (
+                                                <div className="item-img-placeholder">📷</div>
+                                            )}
+                                            <div>
+                                                <strong>{item.title}</strong>
+                                                <div className="item-price">${Number(item.price).toFixed(2)}</div>
+                                            </div>
+                                        </div>
+                                        <button className="btn btn-edit" onClick={() => handleEditItem(item)}>
+                                            Редактировать
+                                        </button>
                                     </div>
-                                    <button className="btn btn-edit" onClick={() => handleEditItem(item)}>
-                                        Редактировать
-                                    </button>
-                                </div>
-                            ))}
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </div>
