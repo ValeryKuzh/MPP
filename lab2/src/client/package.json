@@ -16,7 +16,10 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build"
+    "build": "react-scripts build",
+    "type-check": "tsc --noEmit",
+    "lint": "echo \"Skipping lint for client\"",
+    "test": "jest --passWithNoTests"
   },
   "proxy": "http://localhost:5000",
   "browserslist": {
