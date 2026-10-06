@@ -426,9 +426,7 @@ export const App: React.FC = () => {
                     <div className="grid-user">
                         <div className="products-grid">
                             {filteredItems.length === 0 ? (
-                                <div className="empty-state">
-                                    <p>Товары не найдены</p>
-                                </div>
+                                <div className="empty-state">Товары не найдены</div>
                             ) : (
                                 filteredItems.map((item) => (
                                     <div key={item.id} className="product-card">
@@ -436,9 +434,7 @@ export const App: React.FC = () => {
                                             {item.image_url ? (
                                                 <img src={item.image_url} alt={item.title} className="product-img" />
                                             ) : (
-                                                <div className="product-placeholder">
-                                                    📷 Нет изображения
-                                                </div>
+                                                <div className="product-placeholder">📷 Нет изображения</div>
                                             )}
                                         </div>
 
@@ -459,7 +455,7 @@ export const App: React.FC = () => {
                         <div className="card cart-card">
                             <h4>🛒 Моя Корзина ({cart.reduce((a, b) => a + b.quantity, 0)})</h4>
                             {cart.length === 0 ? (
-                                <p style={{ fontSize: '13px', color: '#94a3b8', marginTop: '10px' }}>Корзина пуста</p>
+                                <p className="empty-cart-text">Корзина пуста</p>
                             ) : (
                                 <div className="cart-list">
                                     {cart.map((c) => (
@@ -471,9 +467,9 @@ export const App: React.FC = () => {
                                             <strong>${(Number(c.item.price) * c.quantity).toFixed(2)}</strong>
                                         </div>
                                     ))}
-                                    <hr style={{ margin: '12px 0', borderColor: 'var(--border-color)' }} />
+                                    <hr className="divider" />
                                     <div className="cart-total">
-                                        <span>Итого к оплате:</span>
+                                        <span>Итого:</span>
                                         <strong>${cart.reduce((sum, c) => sum + Number(c.item.price) * c.quantity, 0).toFixed(2)}</strong>
                                     </div>
                                     <button
@@ -496,9 +492,11 @@ export const App: React.FC = () => {
             {/* ЭКРАН 2: РЕЖИМ МЕНЕДЖЕРА (MANAGER) */}
             {role === 'MANAGER' && (
                 <div className="manager-view">
-                    <h3>Панель управления каталогом</h3>
-                    <div className="grid" style={{ marginTop: '15px' }}>
-                        <div className="card">
+                    <h3 style={{ marginBottom: '16px' }}>Панель управления каталогом</h3>
+
+                    <div className="manager-grid">
+                        {/* Форма слева */}
+                        <div className="card manager-form-card">
                             <h4>{editingId ? '✏️ Редактировать товар' : '➕ Добавить товар'}</h4>
                             <form onSubmit={handleSubmitItem}>
                                 <div className="form-group">
@@ -517,33 +515,39 @@ export const App: React.FC = () => {
                                     <label>Изображение</label>
                                     <input type="file" accept="image/*" onChange={(e) => e.target.files && setFile(e.target.files[0])} />
                                 </div>
-                                <button type="submit" className="btn btn-primary">Сохранить</button>
-                                {editingId && (
-                                    <button type="button" className="btn btn-secondary" onClick={resetForm} style={{ marginLeft: '8px' }}>
-                                        Отмена
+                                <div className="form-actions">
+                                    <button type="submit" className="btn btn-primary">
+                                        {editingId ? 'Сохранить изменения' : 'Добавить товар'}
                                     </button>
-                                )}
+                                    {editingId && (
+                                        <button type="button" className="btn btn-secondary" onClick={resetForm}>
+                                            Отмена
+                                        </button>
+                                    )}
+                                </div>
                             </form>
                         </div>
 
-                        <div className="card">
-                            <h4>Управление позициями ({items.length})</h4>
-                            <div className="manager-items-list" style={{ marginTop: '12px' }}>
+                        {/* Карточки справа */}
+                        <div className="card manager-list-card">
+                            <h4 style={{ marginBottom: '16px' }}>Управление позициями ({items.length})</h4>
+                            <div className="manager-cards-grid">
                                 {items.map((item) => (
-                                    <div key={item.id} className="item-card">
-                                        <div className="item-info">
+                                    <div key={item.id} className="manager-product-card">
+                                        <div className="manager-card-img-wrapper">
                                             {item.image_url ? (
-                                                <img src={item.image_url} alt={item.title} className="item-img" />
+                                                <img src={item.image_url} alt={item.title} className="product-img" />
                                             ) : (
-                                                <div className="item-img-placeholder">📷</div>
+                                                <div className="product-placeholder">📷 Нет фото</div>
                                             )}
-                                            <div>
-                                                <strong>{item.title}</strong>
-                                                <div className="item-price">${Number(item.price).toFixed(2)}</div>
-                                            </div>
+                                        </div>
+                                        <div className="manager-card-body">
+                                            <h5>{item.title}</h5>
+                                            <div className="price">${Number(item.price).toFixed(2)}</div>
+                                            <p className="desc">{item.description || 'Без описания'}</p>
                                         </div>
                                         <button className="btn btn-edit" onClick={() => handleEditItem(item)}>
-                                            Редактировать
+                                            ✏️ Редактировать
                                         </button>
                                     </div>
                                 ))}
