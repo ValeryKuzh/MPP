@@ -34,6 +34,8 @@ jobs:
 
       - name: Запуск линтера
         run: npm run lint --if-present
+        env:
+          ESLINT_USE_FLAT_CONFIG: false
 
       - name: Запуск автотестов
         run: npm run test --if-present
